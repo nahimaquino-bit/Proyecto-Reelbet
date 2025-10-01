@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Gestión de Pedidos</title>
+
+  <!-- Tipografía y Bootstrap -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --bg-gradient: linear-gradient(90deg, #1f1f1f, #2a2a2a);
+      --accent: #102359;
+      --text-light: #e0e0e0;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255,255,255,0.15);
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #1c1c1c;
+      padding: 2rem 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1030;
+    }
+    .sidebar h3 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      color: #bbb;
+      text-decoration: none;
+      padding: .75rem 1rem;
+      border-radius: .5rem;
+      margin-bottom: .5rem;
+      transition: background .2s, color .2s;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      background: var(--bg-gradient);
+      padding: 2rem;
+      margin-left: 260px; /* espacio para sidebar */
+      overflow-y: auto;
+      animation: fadeIn .6s ease;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glass card */
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    .glass-card h1, .glass-card h5 {
+      color: #fff;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Forms */
+    .form-control {
+      background: #1f1f1f;
+      border: 1px solid #444;
+      color: #eee;
+      border-radius: .5rem;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .form-control:focus {
+      background: #222;
+      border-color: var(--accent);
+      box-shadow: 0 0 6px rgba(45,137,239,0.5);
+      outline: none;
+    }
+    .btn-submit {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: .75rem 1.5rem;
+      border-radius: .5rem;
+      font-weight: 500;
+      transition: background .3s;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .btn-submit:hover {
+      background: #1c6fd4;
+    }
+    .alert-danger {
+      margin-top: 1rem;
+      color: #fff;
+    }
+    .section-light {
+      background: rgba(255,255,255,0.03);
+      border-radius: .75rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .section-light input[readonly] {
+      background-color: #f5f5f5;    /* fondo claro */
+      color: #333333;               /* texto oscuro */
+      border-color: #cccccc;        /* bordes suaves */
+      box-shadow: none;             /* opcional: quita cualquier sombra */
+    }
+
+    /* Cards de platos */
+    .card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .card-img-top {
+      height: 160px;
+      object-fit: cover;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+    }
+
+    .card-body {
+      padding: 1rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+      text-align: center;
+      flex-grow: 0;
+    }
+
+    .btn-info-icon {
+      font-size: 1.4rem;
+      padding: 0 0.25rem;
+      line-height: 1;
+      background: none;
+      border: none;
+      color: #17a2b8;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      align-self: center;
+      transition: color 0.3s;
+    }
+    .btn-info-icon:hover {
+      color: #0d6efd;
+    }
+
+    /* Responsive */
+
+    /* Sidebar oculto y toggle en móvil */
+    .sidebar-toggle-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: var(--accent);
+      border: none;
+      padding: 0.5rem 0.8rem;
+      border-radius: 0.3rem;
+      color: white;
+      font-size: 1.5rem;
+      z-index: 1100;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 991.98px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 220px;
+        transform: translateX(-100%);
+        z-index: 1050;
+      }
+      .sidebar.show {
+        transform: translateX(0);
+        box-shadow: 2px 0 12px rgba(0,0,0,0.7);
+      }
+      .main-content {
+        margin-left: 0;
+        padding-top: 60px;
+      }
+      .sidebar-toggle-btn {
+        display: block;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .glass-card {
+        padding: 1rem;
+        max-width: 100%;
+      }
+      .card-img-top {
+        height: 120px;
+      }
+      .card-body {
+        padding: 0.75rem;
+      }
+      .btn-submit {
+        font-size: 1rem;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- Botón para togglear sidebar en móvil -->
+<button class="sidebar-toggle-btn" id="sidebarToggle">&#9776;</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}"
+     style="display: block; text-align: center; margin-bottom: 1.5rem;">
+    <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+  </a>
+
+  <!-- Visible para USER -->
+  <a th:href="@{/registros}" sec:authorize="hasRole('USER')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/registros')} ? 'active'">
+    📋 Datos Personales
+  </a>
+  <a th:href="@{/pedidos}" sec:authorize="hasRole('USER')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidos')} ? 'active'">
+    🛒 Pedidos
+  </a>
+  <a th:href="@{/historial}" sec:authorize="hasRole('USER')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/historial')} ? 'active'">
+    📄 Historial Pedidos
+  </a>
+
+  <!-- Solo ADMIN -->
+  <a th:href="@{/pedidosrealizados}" sec:authorize="hasRole('ADMIN')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidosrealizados')} ? 'active'">
+    🧾 Pedidos Realizados
+  </a>
+  <a th:href="@{/stock/nuevo}" sec:authorize="hasRole('ADMIN')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/stock/nuevo')} ? 'active'">
+    ➕ Agregar Stock
+  </a>
+  <a th:href="@{/stock}" sec:authorize="hasRole('ADMIN')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/stock')} ? 'active'">
+    📦 Ver Stock
+  </a>
+
+  <!-- Siempre visible -->
+  <a th:href="@{/logout}">🔒 Cerrar Sesión</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <div class="glass-card">
+    <h1>Gestión de Pedidos</h1>
+
+    <!-- Error general -->
+    <div th:if="${error}" class="alert alert-danger">
+      <p th:text="${error}"></p>
+    </div>
+
+    <!-- Formulario pedido -->
+    <form th:action="@{/pedidos}" method="post" th:object="${pedido}">
+
+      <!-- Datos del cliente mostrados en readonly -->
+      <div class="section-light">
+        <h5>Información del Cliente</h5>
+        <div class="form-row">
+          <div class="col-md-4 mb-3">
+            <label>Nombre</label>
+            <input type="text" th:value="${cliente.nombre}" class="form-control" readonly/>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label>Apellido</label>
+            <input type="text" th:value="${cliente.apellido}" class="form-control" readonly/>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label>Teléfono</label>
+            <input type="text" th:value="${cliente.telefono}" class="form-control" readonly/>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Dirección</label>
+            <input type="text" th:value="${cliente.direccion}" class="form-control" readonly/>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Email</label>
+            <input type="text" th:value="${cliente.email}" class="form-control" readonly/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalle del Pedido con imágenes estilo KFC/McDonald's -->
+      <div class="section-light">
+        <h5>Detalle del Pedido</h5>
+        <div class="row">
+
+          <!-- Ceviche Blanco -->
+          <div class="col-12 col-sm-6 col-md-4 mb-4 d-flex">
+            <div class="card bg-dark text-white w-100">
+              <img src="/images/platos/ceviche_blanco.jpg" class="card-img-top" alt="Ceviche Blanco">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Ceviche Blanco</h5>
+                <button type="button" class="btn-info-icon" onclick="verDetalle('Ceviche Blanco')">ℹ️</button> <label>Info</label>
+
+                <select th:field="*{cevicheBlanco}" class="form-control mb-2">
+                  <option value="">Seleccionar</option>
+                  <option value="SI">SI</option>
+                  <option value="NO">NO</option>
+                </select>
+                <input type="number" th:field="*{cantCevBlanco}" class="form-control" min="0" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ceviche Rojo -->
+          <div class="col-12 col-sm-6 col-md-4 mb-4 d-flex">
+            <div class="card bg-dark text-white w-100">
+              <img src="/images/platos/ceviche_rojo.jpg" class="card-img-top" alt="Ceviche Rojo">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Ceviche Rojo</h5>
+                <button type="button" class="btn-info-icon" onclick="verDetalle('Ceviche Rojo')">ℹ️</button> <label>Info</label>
+
+                <select th:field="*{cevicheRojo}" class="form-control mb-2">
+                  <option value="">Seleccionar</option>
+                  <option value="SI">SI</option>
+                  <option value="NO">NO</option>
+                </select>
+                <input type="number" th:field="*{cantCevRojo}" class="form-control" min="0" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ceviche Camarón -->
+          <div class="col-12 col-sm-6 col-md-4 mb-4 d-flex">
+            <div class="card bg-dark text-white w-100">
+              <img src="/images/platos/ceviche_camaron.jpg" class="card-img-top" alt="Ceviche Camarón">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Ceviche Camarón</h5>
+                <button type="button" class="btn-info-icon" onclick="verDetalle('Ceviche Camaron')">ℹ️</button> <label>Info</label>
+
+                <select th:field="*{cevicheCamaron}" class="form-control mb-2">
+                  <option value="">Seleccionar</option>
+                  <option value="SI">SI</option>
+                  <option value="NO">NO</option>
+                </select>
+                <input type="number" th:field="*{cantCevCamaron}" class="form-control" min="0" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Encebollado -->
+          <div class="col-12 col-sm-6 col-md-4 mb-4 d-flex">
+            <div class="card bg-dark text-white w-100">
+              <img src="/images/platos/encebollado.jpg" class="card-img-top" alt="Encebollado">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Encebollado</h5>
+                <button type="button" class="btn-info-icon" onclick="verDetalle('Encebollado')">ℹ️</button> <label>Info</label>
+
+                <select th:field="*{encebollado}" class="form-control mb-2">
+                  <option value="">Seleccionar</option>
+                  <option value="SI">SI</option>
+                  <option value="NO">NO</option>
+                </select>
+                <input type="number" th:field="*{cantEncebollado}" class="form-control" min="0" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bollo Pescado -->
+          <div class="col-12 col-sm-6 col-md-4 mb-4 d-flex">
+            <div class="card bg-dark text-white w-100">
+              <img src="/images/platos/bollo_pescado.jpg" class="card-img-top" alt="Bollo Pescado">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Bollo Pescado</h5>
+                <button type="button" class="btn-info-icon" onclick="verDetalle('Bollo Pescado')">ℹ️</button> <label>Info</label>
+
+                <select th:field="*{bolloPescado}" class="form-control mb-2">
+                  <option value="">Seleccionar</option>
+                  <option value="SI">SI</option>
+                  <option value="NO">NO</option>
+                </select>
+                <input type="number" th:field="*{cantBolloPescado}" class="form-control" min="0" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tostado -->
+          <div class="col-12 col-sm-6 col-md-4 mb-4 d-flex">
+            <div class="card bg-dark text-white w-100">
+              <img src="/images/platos/tostado.jpg" class="card-img-top" alt="Tostado">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Tostado</h5>
+                <button type="button" class="btn-info-icon" onclick="verDetalle('Tostado')">ℹ️</button> <label>Info</label>
+
+                <select th:field="*{tostado}" class="form-control mb-2">
+                  <option value="">Seleccionar</option>
+                  <option value="SI">SI</option>
+                  <option value="NO">NO</option>
+                </select>
+                <!-- No cantidad para tostado -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">Guardar Pedido</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Bootstrap para detalles -->
+<div class="modal fade" id="detalleModal" tabindex="-1" role="dialog" aria-labelledby="detalleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detalleModalLabel">Detalle</h5>
+        <button type="button" class="close text-light" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="detalleModalBody">
+        <!-- contenido dinámico -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+  // Toggle sidebar en móvil
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+  });
+
+  // Mostrar detalles del plato en modal
+  function verDetalle(plato) {
+    let detalleTexto = "";
+    switch (plato) {
+      case 'Ceviche Blanco':
+        detalleTexto = "Ceviche Blanco hecho con pescado fresco, limón, cebolla, y cilantro.";
+        break;
+      case 'Ceviche Rojo':
+        detalleTexto = "Ceviche Rojo con salsa de tomate y especias tradicionales.";
+        break;
+      case 'Ceviche Camaron':
+        detalleTexto = "Delicioso ceviche de camarón preparado al estilo local.";
+        break;
+      case 'Encebollado':
+        detalleTexto = "Sopa típica con pescado, yuca, cebolla y limón.";
+        break;
+      case 'Bollo Pescado':
+        detalleTexto = "Bollo de pescado acompañado con salsa picante.";
+        break;
+      case 'Tostado':
+        detalleTexto = "Tostado crujiente de maíz, perfecto para acompañar.";
+        break;
+      default:
+        detalleTexto = "Descripción no disponible.";
+    }
+    document.getElementById('detalleModalLabel').innerText = plato;
+    document.getElementById('detalleModalBody').innerText = detalleTexto;
+    $('#detalleModal').modal('show');
+  }
+</script>
+
+</body>
+</html>

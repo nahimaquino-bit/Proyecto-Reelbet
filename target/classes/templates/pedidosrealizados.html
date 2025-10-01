@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Pedidos Realizados</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+            crossorigin="anonymous"
+    />
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-gradient: linear-gradient(to right, #1f1f1f, #2a2a2a);
+            --accent: #142c6a;
+            --text-light: #e0e0e0;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Contenedor principal: sidebar + main */
+        .wrapper {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #1c1c1c;
+            padding: 2rem 1rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #bbb;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+            word-break: break-word;
+        }
+
+        .sidebar a.active,
+        .sidebar a:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            background: var(--bg-gradient);
+            padding: 2rem;
+            overflow-y: auto;
+            animation: fadeIn 0.8s ease;
+            min-width: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Panel estilo Glass */
+        .panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            padding: 1.5rem;
+            max-width: 100%;
+            width: 800px;
+            overflow-x: auto;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            color: #1c6fd4;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            color: #fff;
+            background: var(--accent);
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #1c6fd4;
+        }
+
+        /* Tablas */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            table-layout: fixed;
+        }
+
+        table th:nth-child(4),
+        table td:nth-child(4) {
+            width: 35%;
+            white-space: normal;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-light);
+            overflow-wrap: break-word;
+            text-align: left;
+            vertical-align: middle;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        th {
+            background-color: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: none;
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+
+        tr:hover td {
+            background-color: rgba(33, 66, 255, 0.15);
+            box-shadow: inset 0 0 8px rgba(33, 66, 255, 0.25);
+        }
+
+        tr:nth-child(odd) td {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        tbody tr:last-child td {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+
+        td {
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        /* Scroll horizontal en tablas pequeñas */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -260px;
+                height: 100vh;
+                overflow-y: auto;
+                transition: left 0.3s ease;
+                z-index: 1050;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                padding: 1rem;
+                margin-left: 0;
+            }
+
+            /* Botón para mostrar/ocultar sidebar */
+            #sidebarToggle {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                background-color: var(--accent);
+                border: none;
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 0.5rem;
+                z-index: 1100;
+                cursor: pointer;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Botón para togglear sidebar en móvil -->
+<button id="sidebarToggle" aria-label="Toggle sidebar" style="display:none;">☰ Menú</button>
+
+<div class="wrapper">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}"
+           style="display: block; text-align: center; margin-bottom: 1rem;">
+            <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+        </a>
+
+        <!-- Visible para USER -->
+        <a th:href="@{/registros}" sec:authorize="hasRole('USER')"
+           th:classappend="${#httpServletRequest.requestURI.startsWith('/registros')} ? 'active'">
+            📋 Datos Personales
+        </a>
+        <a th:href="@{/pedidos}" sec:authorize="hasRole('USER')"
+           th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidos')} ? 'active'">
+            🛒 Pedidos
+        </a>
+        <a th:href="@{/historial}" sec:authorize="hasRole('USER')"
+           th:classappend="${#httpServletRequest.requestURI.startsWith('/historial')} ? 'active'">
+            📄 Historial Pedidos
+        </a>
+
+        <!-- Solo ADMIN -->
+        <a th:href="@{/pedidosrealizados}" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidosrealizados')} ? 'active'">
+            🧾 Pedidos Realizados
+        </a>
+        <a th:href="@{/stock/nuevo}" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${#httpServletRequest.requestURI.startsWith('/stock/nuevo')} ? 'active'">
+            ➕ Agregar Stock
+        </a>
+        <a th:href="@{/stock}" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${#httpServletRequest.requestURI.startsWith('/stock')} ? 'active'">
+            📦 Ver Stock
+        </a>
+
+        <!-- Siempre visible -->
+        <a th:href="@{/logout}">🔒 Cerrar Sesión</a>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="panel">
+            <h2>Pedidos Realizados</h2>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID Pedido</th>
+                    <th>Nombre Cliente</th>
+                    <th>Fecha</th>
+                    <th>Detalle Pedido</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="pedido : ${pedidos}">
+                    <td th:text="${pedido.idPedido}">ID</td>
+                    <td th:text="${pedido.nombre}">Cliente</td>
+                    <td th:text="${pedido.fecha}">Fecha</td>
+                    <td>
+                        <ul>
+                            <li th:if="${pedido.cantCevBlanco > 0}"> Ceviche Blanco: <span th:text="${pedido.cantCevBlanco}"></span></li>
+                            <li th:if="${pedido.cantCevRojo > 0}"> Ceviche Rojo: <span th:text="${pedido.cantCevRojo}"></span></li>
+                            <li th:if="${pedido.cantCevCamaron > 0}"> Ceviche Camarón: <span th:text="${pedido.cantCevCamaron}"></span></li>
+                            <li th:if="${pedido.cantEncebollado > 0}"> Encebollado: <span th:text="${pedido.cantEncebollado}"></span></li>
+                            <li th:if="${pedido.cantBolloPescado > 0}"> Bollo Pescado: <span th:text="${pedido.cantBolloPescado}"></span></li>
+                            <li th:if="${pedido.cantBolloPollo > 0}"> Bollo Pollo: <span th:text="${pedido.cantBolloPollo}"></span></li>
+                            <li th:if="${pedido.cantBolloCamaron > 0}"> Bollo Camarón: <span th:text="${pedido.cantBolloCamaron}"></span></li>
+                        </ul>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <a th:href="@{/home/admin}" class="btn">Volver al Inicio</a>
+        </div>
+    </main>
+</div>
+
+<!-- Bootstrap y jQuery JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"
+></script>
+
+<script>
+    // Toggle sidebar en móvil
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+
+    function checkWindowSize() {
+        if(window.innerWidth < 768) {
+            toggleBtn.style.display = 'block';
+            sidebar.classList.add('sidebar'); // ensure class is present
+            sidebar.classList.remove('active');
+        } else {
+            toggleBtn.style.display = 'none';
+            sidebar.classList.remove('active');
+        }
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+
+    window.addEventListener('resize', checkWindowSize);
+    window.addEventListener('load', checkWindowSize);
+</script>
+
+</body>
+</html>

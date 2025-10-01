@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crear Administrador</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --accent: #2752d6;
+            --text-light: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255,255,255,0.15);
+            --border-color: #444;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .glass-card {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        .glass-card h1 {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: #1f1f1f;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 6px rgba(39, 82, 214, 0.7);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background: #1c6fd4;
+        }
+
+        .mensaje, .error {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .mensaje {
+            background-color: #27ae60;
+            color: #fff;
+        }
+
+        .error {
+            background-color: #c0392b;
+            color: #fff;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 2rem;
+            text-decoration: none;
+            color: #fff;
+            background: #2d89ef;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-group {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 1.5rem 1rem;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="glass-card">
+    <h1>Crear nuevo Administrador</h1>
+
+    <div th:if="${mensaje}" class="mensaje" th:text="${mensaje}"></div>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <form th:action="@{/crearAdmin}" method="post" th:object="${usuarioForm}">
+        <div class="form-group">
+            <label for="username">Usuario:</label>
+            <input id="username" type="text" th:field="*{username}" placeholder="Nombre de usuario" required />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input id="password" type="password" th:field="*{password}" placeholder="Contraseña" required />
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmar contraseña:</label>
+            <input id="confirmPassword" type="password" th:field="*{confirmPassword}" placeholder="Confirmar contraseña" required />
+        </div>
+
+        <button type="submit">Crear Administrador</button>
+
+        <div class="btn-group">
+            <a th:href="@{/home/admin}" class="btn">Ir al Home Admin</a>
+            <a th:href="@{/login}" class="btn">Volver al Login</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

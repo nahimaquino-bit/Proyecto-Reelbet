@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Inicio – ReelBet</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-gradient: linear-gradient(to right, #1f1f1f, #2a2a2a);
+            --accent: #142c6a;  /* azul principal */
+            --accent-hover: #1c6fd4;
+            --text-light: #e0e0e0;
+            --glass-bg: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            font-size: 18px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #1c1c1c;
+            padding: 1.5rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h3 {
+            color: #fff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #bbb;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar a.active,
+        .sidebar a:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: var(--bg-gradient);
+            overflow-y: auto;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Panel glass style */
+        .panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            color: #1c6fd4;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            color: #fff;
+            background: var(--accent);
+            transition: background 0.3s;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Alertas */
+        .alert {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .alert.warn {
+            background: rgba(179, 71, 71, 0.84);
+            color: #fff;
+        }
+
+        .alert.ok {
+            background: #297747;
+            color: #fff;
+        }
+
+        .alert ul {
+            margin: 0.5rem 0 0 1.25rem;
+        }
+
+        .alert li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .sidebar a {
+                margin: 0.25rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+            .panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}" style="text-align: center;">
+        <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+    </a>
+
+    <!-- Visible para USER -->
+    <a th:href="@{/registros}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/registros')} ? 'active'">
+        📋 Datos Personales
+    </a>
+    <a th:href="@{/pedidos}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidos')} ? 'active'">
+        🛒 Pedidos
+    </a>
+    <a th:href="@{/historial}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/historial')} ? 'active'">
+        📄 Historial Pedidos
+    </a>
+
+    <!-- Solo ADMIN -->
+    <a th:href="@{/pedidosrealizados}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidosrealizados')} ? 'active'">
+        🧾 Pedidos Realizados
+    </a>
+    <a th:href="@{/stock/nuevo}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/stock/nuevo')} ? 'active'">
+        ➕ Agregar Stock
+    </a>
+    <a th:href="@{/stock}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/stock')} ? 'active'">
+        📦 Ver Stock
+    </a>
+
+    <!-- Siempre visible -->
+    <a th:href="@{/logout}">🔒 Cerrar Sesión</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<section class="main-content">
+    <div class="panel">
+        <h2>Panel de Control</h2>
+
+        <!-- Alerta de stock bajo -->
+        <div th:if="${!lowStockList.empty}" class="alert warn">
+            <strong>¡Atención! Te estás quedando sin estos productos:</strong>
+            <ul>
+                <li th:each="p : ${lowStockList}"
+                    th:text="${p.nombreProducto + ' (' + p.cantidad + ')'}">
+                    Producto (cantidad)
+                </li>
+            </ul>
+
+            <a th:href="@{/stock}" class="btn">Revisar Inventario</a>
+        </div>
+
+        <div th:if="${lowStockList.empty}" class="alert ok">
+            Todos los productos tienen stock suficiente.
+        </div>
+
+        <!-- Botones de acción -->
+        <a th:href="@{/pedidosrealizados}" class="btn">🛒 Ver Pedidos Realizados</a>
+
+        <a th:href="@{/crearAdmin}" class="btn">Crear nuevo administrador</a>
+
+    </div>
+</section>
+
+</body>
+</html>

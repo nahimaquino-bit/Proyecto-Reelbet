@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <title>Registro de Cliente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --bg-gradient: linear-gradient(to right, #1f1f1f, #2a2a2a);
+      --accent: #102359;
+      --text-light: #e0e0e0;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255,255,255,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Inter', sans-serif;
+      flex-direction: column;
+    }
+
+    /* Contenedor principal con sidebar y contenido */
+    .container-fluid {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      min-height: 0; /* para evitar overflow */
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #1c1c1c;
+      padding: 2rem 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .sidebar h3 {
+      color: #fff;
+      margin-bottom: 2rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      color: #bbb;
+      text-decoration: none;
+      padding: .75rem 1rem;
+      border-radius: .5rem;
+      margin-bottom: .5rem;
+      transition: background 0.2s, color 0.2s;
+      width: 100%;
+      justify-content: center;
+      text-align: center;
+      word-break: break-word;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Contenido principal */
+    .main-content {
+      flex: 1;
+      background: var(--bg-gradient);
+      padding: 2rem;
+      overflow-y: auto;
+      animation: fadeIn 0.8s ease;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      padding: 2rem;
+      max-width: 700px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .glass-card h2 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+    .form-control {
+      background: #1f1f1f;
+      border: 1px solid #444;
+      color: #eee;
+      border-radius: .5rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .form-control:focus {
+      background: #222;
+      border-color: var(--accent);
+      box-shadow: 0 0 6px rgba(45,137,239,0.5);
+      outline: none;
+    }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: .75rem;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      border-radius: .5rem;
+      font-weight: 500;
+      transition: background 0.3s;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    .btn-primary:hover {
+      background: #1c6fd4;
+    }
+    .text-danger {
+      font-size: 0.9rem;
+      color: #ff5252;
+      margin-top: 0.25rem;
+    }
+
+    /* Responsive */
+
+    /* Móviles: sidebar arriba horizontal, contenido debajo */
+    @media (max-width: 767.98px) {
+      body {
+        font-size: 16px;
+      }
+      .container-fluid {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        padding: 1rem 0.5rem;
+        box-shadow: none;
+        flex-wrap: wrap;
+      }
+      .sidebar a {
+        flex: 1 1 auto;
+        margin: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+      }
+      .main-content {
+        padding: 1rem;
+      }
+      .glass-card {
+        padding: 1.5rem 1rem;
+        margin: 0 0.5rem;
+      }
+    }
+
+    /* Tablets (768-991px) */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .main-content {
+        padding: 1.5rem 2rem;
+      }
+      .glass-card {
+        max-width: 600px;
+        padding: 2rem;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <!-- Sidebar -->
+  <nav class="sidebar" role="navigation" aria-label="Menú principal">
+    <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}" style="margin-bottom: 1.5rem; text-align:center;">
+      <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+    </a>
+    <!-- Aquí puedes agregar enlaces si quieres, o dejar solo el logo para esta vista -->
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+    <div class="glass-card">
+      <h2>Datos Personales</h2>
+      <form th:action="@{/registros}" method="post" th:object="${registro}">
+        <div th:if="${mensaje}" class="alert alert-info" role="alert" th:text="${mensaje}"></div>
+
+        <input type="hidden" th:field="*{username}" />
+
+        <div class="form-group">
+          <label for="cedula">Cédula</label>
+          <input id="cedula" type="text" th:field="*{cedula}" class="form-control" placeholder="Ej. 0102030405"/>
+          <div th:if="${#fields.hasErrors('cedula')}" th:errors="*{cedula}" class="text-danger"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" th:field="*{nombre}" class="form-control" placeholder="Ingrese su nombre"/>
+          <div th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}" class="text-danger"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="apellido">Apellido</label>
+          <input id="apellido" type="text" th:field="*{apellido}" class="form-control" placeholder="Ingrese su apellido"/>
+          <div th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}" class="text-danger"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" type="text" th:field="*{telefono}" class="form-control" placeholder="Ej. 0991234567"/>
+          <div th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}" class="text-danger"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="direccion">Dirección</label>
+          <input id="direccion" type="text" th:field="*{direccion}" class="form-control" placeholder="Ej. Av. Principal 123"/>
+          <div th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}" class="text-danger"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" th:field="*{email}" class="form-control" placeholder="correo@ejemplo.com"/>
+          <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></div>
+        </div>
+
+        <button type="submit" class="btn-primary">Guardar Registro</button>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>

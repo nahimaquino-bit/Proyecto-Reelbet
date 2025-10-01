@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <title>Recibo del Pedido – ReelBet</title>
+
+  <style>
+    /* Base */
+    body, html {
+      margin: 0; padding: 0;
+      font-family: sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      display: flex;
+      min-height: 100vh;
+      font-size: 18px;
+      flex-direction: column;
+    }
+
+    /* Wrapper para sidebar + main */
+    .wrapper {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      flex-direction: row;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: #1c1c1c;
+      padding: 1.5rem;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .sidebar h3 {
+      color: #fff;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-weight: 600;
+    }
+    .sidebar a {
+      display: block;
+      color: #bbb;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      margin-bottom: 0.5rem;
+      word-break: break-word;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar a.active,
+    .sidebar a:hover {
+      background: #06274e; color: #fff;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      background: linear-gradient(to right, #1f1f1f, #2a2a2a);
+      max-width: 1000px;
+      margin: 0 auto;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 1rem;
+      padding: 3.5rem;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin: 2rem auto;
+      word-wrap: break-word;
+    }
+    .panel h2 {
+      margin-top: 0; color: #2d89ef;
+      text-align: center;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      word-break: break-word;
+    }
+    .total {
+      font-weight: bold;
+      font-size: 1.7rem;
+      margin-top: 1rem;
+      text-align: right;
+      word-wrap: break-word;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 0.8rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 2rem;
+      text-decoration: none;
+      color: #fff;
+      background: #2d89ef;
+      cursor: pointer;
+      transition: background 0.3s;
+      white-space: nowrap;
+    }
+    .btnpdf {
+      display: inline-block;
+      padding: 0.5rem 0.8rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 2rem;
+      text-decoration: none;
+      color: #fff;
+      background: #752d2d;
+      cursor: pointer;
+      transition: background 0.3s;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: #1c6fd4;
+    }
+    .btnpdf:hover {
+      background: #5b2222;
+    }
+
+    /* Responsive */
+
+    /* En pantallas pequeñas (<768px), sidebar fijo oculta, se muestra botón menú */
+    @media (max-width: 767.98px) {
+      body, html {
+        font-size: 16px;
+      }
+      .wrapper {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 1rem 1rem 0.5rem;
+        box-shadow: none;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        overflow-x: auto;
+      }
+      .sidebar a {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+      }
+      .main-content {
+        padding: 1rem 1rem 2rem;
+        max-width: 100%;
+        margin: 0;
+      }
+      .panel {
+        padding: 2rem 1rem;
+        margin: 1rem 0;
+      }
+      .btn, .btnpdf {
+        width: 100%;
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        white-space: normal;
+        text-align: center;
+      }
+      .total {
+        font-size: 1.3rem;
+      }
+    }
+
+    /* En tablets y pantallas medianas (768px - 991px) */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .main-content {
+        padding: 2rem 1.5rem;
+        max-width: 720px;
+      }
+      .panel {
+        padding: 3rem 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" role="navigation" aria-label="Menú de navegación principal">
+    <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}"
+       style="display: block; text-align: center; margin-bottom: 1rem;">
+      <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+    </a>
+    <!-- Visible para USER -->
+    <a th:href="@{/registros}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/registros')} ? 'active'">
+      📋 Datos Personales
+    </a>
+    <a th:href="@{/pedidos}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidos')} ? 'active'">
+      🛒 Pedidos
+    </a>
+    <a th:href="@{/historial}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/historial')} ? 'active'">
+      📄 Historial Pedidos
+    </a>
+
+    <!-- Solo ADMIN -->
+    <a th:href="@{/pedidosrealizados}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidosrealizados')} ? 'active'">
+      🧾 Pedidos Realizados
+    </a>
+    <a th:href="@{/stock/nuevo}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/stock/nuevo')} ? 'active'">
+      ➕ Agregar Stock
+    </a>
+    <a th:href="@{/stock}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/stock')} ? 'active'">
+      📦 Ver Stock
+    </a>
+
+    <!-- Siempre visible -->
+    <a th:href="@{/logout}">🔒 Cerrar Sesión</a>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" role="main">
+    <div class="panel">
+      <h2>Recibo del Pedido</h2>
+
+      <p><strong>Nombre del cliente:</strong> <span th:text="${pedido.nombre}">Nombre Cliente</span></p>
+      <p><strong>ID del pedido:</strong> <span th:text="${pedido.idPedido}">123</span></p>
+      <p><strong>Fecha:</strong> <span th:text="${pedido.fecha}">2025-01-01</span></p>
+
+      <h3>Detalle del pedido</h3>
+      <ul>
+        <li th:if="${pedido.cantCevBlanco > 0}">
+          Ceviche Blanco: <span th:text="${pedido.cantCevBlanco}">0</span>
+        </li>
+        <li th:if="${pedido.cantCevRojo > 0}">
+          Ceviche Rojo: <span th:text="${pedido.cantCevRojo}">0</span>
+        </li>
+        <li th:if="${pedido.cantCevCamaron > 0}">
+          Ceviche Camarón: <span th:text="${pedido.cantCevCamaron}">0</span>
+        </li>
+        <li th:if="${pedido.cantEncebollado > 0}">
+          Encebollado: <span th:text="${pedido.cantEncebollado}">0</span>
+        </li>
+        <li th:if="${pedido.cantBolloPescado > 0}">
+          Bollo de Pescado: <span th:text="${pedido.cantBolloPescado}">0</span>
+        </li>
+        <li th:if="${pedido.cantBolloPollo > 0}">
+          Bollo de Pollo: <span th:text="${pedido.cantBolloPollo}">0</span>
+        </li>
+        <li th:if="${pedido.cantBolloCamaron > 0}">
+          Bollo de Camarón: <span th:text="${pedido.cantBolloCamaron}">0</span>
+        </li>
+        <li th:if="${pedido.cantChifle > 0}">
+          Chifle: <span th:text="${pedido.cantChifle}">0</span>
+        </li>
+        <li th:if="${pedido.tostado != null}">
+          Tostado: <span th:text="${pedido.tostado}"></span>
+        </li>
+      </ul>
+
+      <p class="total">Total a pagar: $<span th:text="${total}">0.00</span></p>
+
+      <a th:href="@{/pedidos}" class="btn" role="button">Volver a Pedidos</a>
+      <a th:href="@{/historial}" class="btn" role="button">Volver a Historial de Recibos</a>
+      <a th:href="@{'/recibo/pdf/' + ${pedido.idPedido}}" class="btnpdf" role="button">⬇️ Descargar Recibo en PDF</a>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

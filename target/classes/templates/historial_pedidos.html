@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Historial de Pedidos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --bg-gradient: linear-gradient(to right, #1f1f1f, #2a2a2a);
+      --accent: #102359;
+      --text-light: #e0e0e0;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255,255,255,0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    body {
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: #1c1c1c;
+      padding: 2rem 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h3 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #bbb;
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .sidebar a.active,
+    .sidebar a:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .main-content {
+      flex: 1;
+      background: var(--bg-gradient);
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      padding: 1.5rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      color: #1c6fd4;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.8rem;
+    }
+
+    .panel table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .panel table th,
+    .panel table td {
+      border: 1px solid #444;
+      padding: 0.75rem;
+      text-align: left;
+      color: var(--text-light);
+    }
+
+    .panel table th {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 0.25rem;
+      text-decoration: none;
+      color: #fff;
+      background: var(--accent);
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #1c6fd4;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: background 0.3s;
+      margin-top: 1rem;
+    }
+
+    .btn-primary:hover {
+      background: #1c6fd4;
+    }
+
+    .alert {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .alert.warn {
+      background: rgba(158, 59, 59, 0.84);
+      color: #fff;
+    }
+
+    .alert.ok {
+      background: #1c653a;
+      color: #fff;
+    }
+
+    input[type="text"], .form-control {
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid #555;
+      margin-right: 0.5rem;
+      background: #1f1f1f;
+      color: #eee;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input[type="text"]:focus, .form-control:focus {
+      background: #222;
+      border-color: var(--accent);
+      box-shadow: 0 0 6px rgba(45,137,239,0.5);
+      outline: none;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 1rem;
+        position: static;
+      }
+
+      .sidebar a {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        justify-content: center;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      .panel h2 {
+        font-size: 1.4rem;
+      }
+
+      .panel table th, .panel table td {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}" style="text-align: center;">
+    <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+  </a>
+
+  <a th:href="@{/registros}" sec:authorize="hasRole('USER')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/registros')} ? 'active'">
+    📋 Datos Personales
+  </a>
+  <a th:href="@{/pedidos}" sec:authorize="hasRole('USER')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidos')} ? 'active'">
+    🛒 Pedidos
+  </a>
+  <a th:href="@{/historial}" sec:authorize="hasRole('USER')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/historial')} ? 'active'">
+    📄 Historial Pedidos
+  </a>
+  <a th:href="@{/pedidosrealizados}" sec:authorize="hasRole('ADMIN')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidosrealizados')} ? 'active'">
+    🧾 Pedidos Realizados
+  </a>
+  <a th:href="@{/stock/nuevo}" sec:authorize="hasRole('ADMIN')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/stock/nuevo')} ? 'active'">
+    ➕ Agregar Stock
+  </a>
+  <a th:href="@{/stock}" sec:authorize="hasRole('ADMIN')"
+     th:classappend="${#httpServletRequest.requestURI.startsWith('/stock')} ? 'active'">
+    📦 Ver Stock
+  </a>
+  <a th:href="@{/logout}">🔒 Cerrar Sesión</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<section class="main-content">
+  <div class="panel">
+    <h2>Historial de Pedidos</h2>
+
+    <div th:if="${error}" class="alert warn" th:text="${error}"></div>
+    <div th:if="${mensaje}" class="alert ok" th:text="${mensaje}"></div>
+
+    <div th:if="${pedidos == null or #lists.isEmpty(pedidos)}" class="alert warn">
+      No tienes pedidos registrados aún.
+    </div>
+
+    <table th:if="${pedidos != null and !#lists.isEmpty(pedidos)}">
+      <thead>
+      <tr>
+        <th>ID Pedido</th>
+        <th>Nombre</th>
+        <th>Fecha</th>
+        <th>Total</th>
+        <th>Recibo</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="pedido : ${pedidos}">
+        <td th:text="${pedido.idPedido}"></td>
+        <td th:text="${pedido.nombre}"></td>
+        <td th:text="${pedido.fecha}"></td>
+        <td th:text="${totales[pedido.idPedido]}"></td>
+        <td><a th:href="@{'/recibo/' + ${pedido.idPedido}}" class="btn">Ver Recibo</a></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</body>
+</html>

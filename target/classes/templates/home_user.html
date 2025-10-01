@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Inicio – ReelBet</title>
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-gradient: linear-gradient(to right, #1f1f1f, #2a2a2a);
+            --accent: #142c6a;
+            --accent-hover: #1c6fd4;
+            --text-light: #e0e0e0;
+            --glass-bg: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            min-height: 100vh;
+            font-size: 18px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #1c1c1c;
+            padding: 1.5rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            color: #fff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #bbb;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar a.active,
+        .sidebar a:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: var(--bg-gradient);
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            color: var(--text-light);
+        }
+
+        th {
+            background: rgba(255,255,255,0.1);
+        }
+
+        tr:nth-child(odd) {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 0.3rem;
+            text-decoration: none;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Para el colspan en mensaje sin pedidos */
+        td[colspan] {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <a th:href="${#authorization.expression('hasRole(''ADMIN'')') ? '/home/admin' : '/home/user'}"
+       style="display: block; text-align: center;">
+        <img src="/images/logo.png.png" alt="ReelBet Logo" style="max-width: 180px; cursor: pointer;"/>
+    </a>
+
+    <!-- Visible para USER -->
+    <a th:href="@{/registros}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/registros')} ? 'active'">
+        📋 Datos Personales
+    </a>
+    <a th:href="@{/pedidos}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidos')} ? 'active'">
+        🛒 Pedidos
+    </a>
+    <a th:href="@{/historial}" sec:authorize="hasRole('USER')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/historial')} ? 'active'">
+        📄 Historial Pedidos
+    </a>
+
+    <!-- Solo ADMIN -->
+    <a th:href="@{/pedidosrealizados}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/pedidosrealizados')} ? 'active'">
+        🧾 Pedidos Realizados
+    </a>
+    <a th:href="@{/stock/nuevo}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/stock/nuevo')} ? 'active'">
+        ➕ Agregar Stock
+    </a>
+    <a th:href="@{/stock}" sec:authorize="hasRole('ADMIN')"
+       th:classappend="${#httpServletRequest.requestURI.startsWith('/stock')} ? 'active'">
+        📦 Ver Stock
+    </a>
+
+    <!-- Siempre visible -->
+    <a th:href="@{/logout}">🔒 Cerrar Sesión</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <h1>Bienvenido, <span sec:authentication="name">Usuario</span></h1>
+
+    <section>
+        <h2>Tus pedidos recientes</h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID Pedido</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Recibo</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pedido : ${pedidos}">
+                <td th:text="${pedido.idPedido}"></td>
+                <td th:text="${pedido.fecha}"></td>
+                <td th:text="${totales[pedido.idPedido]}"></td>
+                <td><a th:href="@{'/recibo/' + ${pedido.idPedido}}" class="btn">Ver Detalle</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pedidos)}">
+                <td colspan="4">No tienes pedidos aún.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+</body>
+</html>
