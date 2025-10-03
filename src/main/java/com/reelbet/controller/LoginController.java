@@ -32,7 +32,7 @@ public class LoginController {
             model.addAttribute("errorMsg", "Usuario o contraseña incorrectos");
         }
         if (logout != null) {
-            model.addAttribute("msg", "Has cerrado sesión correctamente");
+            model.addAttribute("msg", "Has cerrado sesión exitosamente");
         }
         return "login";
     }
