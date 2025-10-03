@@ -31,7 +31,7 @@ public class AdminController {
             }
             usuarioService.registrarAdmin(usuarioForm.getUsername(), usuarioForm.getPassword());
 
-            model.addAttribute("mensaje", "Administrador creado correctamente.");
+            model.addAttribute("mensaje", "Administrador creado con exito.");
             model.addAttribute("usuarioForm", new UsuarioForm()); // limpiar formulario
             return "crearAdmin";
 
