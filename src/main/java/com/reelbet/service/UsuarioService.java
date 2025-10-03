@@ -31,7 +31,7 @@ public class UsuarioService {
     // ✅ Registro público: siempre cliente (ROLE_USER)
     public Usuario registrarUsuario(String username, String password) throws Exception {
         if (usuarioRepository.existsByUsername(username)) {
-            throw new Exception("El usuario ya existe");
+            throw new Exception("El usuario ya es existente");
         }
 
         Usuario usuario = new Usuario();
