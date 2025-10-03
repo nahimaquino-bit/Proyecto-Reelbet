@@ -95,7 +95,7 @@ public class RegistroController {
                 return "redirect:/login?mensaje=datosGuardados";
             }
 
-            model.addAttribute("mensaje", "Datos registrados correctamente.");
+            model.addAttribute("mensaje", "Datos registrados con exito.");
             model.addAttribute("registro", registro);
             return "registros";
         }
