@@ -26,7 +26,7 @@ public class AdminController {
                 return "crearAdmin";
             }
             if (!usuarioForm.getPassword().equals(usuarioForm.getConfirmPassword())) {
-                model.addAttribute("error", "Las contraseñas no coinciden.");
+                model.addAttribute("error", "Las contraseñas no son iguales.");
                 return "crearAdmin";
             }
             usuarioService.registrarAdmin(usuarioForm.getUsername(), usuarioForm.getPassword());
