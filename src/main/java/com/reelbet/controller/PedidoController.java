@@ -174,7 +174,7 @@ public class PedidoController {
         ajustarCantidadesNoSeleccionadas(pedido);
         pedidoRepo.save(pedido);
 
-        redirectAttributes.addFlashAttribute("mensaje", "Pedido realizado exitosamente. Su código es: " + pedido.getIdPedido());
+        redirectAttributes.addFlashAttribute("mensaje", "Pedido realizado con exito. Su código es: " + pedido.getIdPedido());
 
         return "redirect:/recibo/" + pedido.getIdPedido();
     }
