@@ -45,7 +45,7 @@ public class RegistroUsuarioController {
 
         // Validar si el usuario ya existe
         if (usuarioService.existePorUsername(username)) {
-            model.addAttribute("error", "El nombre de usuario ya está registrado.");
+            model.addAttribute("error", "El nombre de usuario ingresado ya está registrado.");
             return "registroUsuarios";
         }
 
